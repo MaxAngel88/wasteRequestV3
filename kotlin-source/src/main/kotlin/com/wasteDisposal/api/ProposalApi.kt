@@ -49,6 +49,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     fun getAllProposalsByParams(@DefaultValue("1") @QueryParam("page") page: Int,
                                 @DefaultValue("") @QueryParam("idProposal") idProposal: String,
                                 @DefaultValue("") @QueryParam("codFornitore") codFornitore: String,
+                                @DefaultValue("") @QueryParam("wasteType") wasteType: String,
                                 @DefaultValue("1990-01-01") @QueryParam("from") from: String,
                                 @DefaultValue("2050-12-31") @QueryParam("to") to: String,
                                 @DefaultValue("pending") @QueryParam("status") status: String,
@@ -80,6 +81,12 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
 
                 if(codFornitore.length > 0){
                     val idEqual = ProposalSchemaV1.PersistentProposal::codFornitore.equal(codFornitore)
+                    val customCriteria = QueryCriteria.VaultCustomQueryCriteria(idEqual, myStatus)
+                    criteria = criteria.and(customCriteria)
+                }
+
+                if(wasteType.length > 0){
+                    val idEqual = ProposalSchemaV1.PersistentProposal::wasteType.equal(wasteType)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(idEqual, myStatus)
                     criteria = criteria.and(customCriteria)
                 }

@@ -58,7 +58,7 @@ class WasteRequestContract : Contract {
         "wasteType cannot be empty" using (wasteRequest.wasteType.isNotEmpty())
         "wasteWeight must be grather than 0" using (wasteRequest.wasteWeight > 0.0)
         "wasteGps cannot be empty" using (wasteRequest.wasteGps.isNotEmpty())
-        "wasteRequest status must be 'running' or 'completed'" using (wasteRequest.status.equals("running", ignoreCase = true) || wasteRequest.status.equals("completed", ignoreCase = true))
+        "wasteRequest status must be 'ongoing' or 'completed'" using (wasteRequest.status.equals("ongoing", ignoreCase = true) || wasteRequest.status.equals("completed", ignoreCase = true))
 
         "All of the participants must be signers." using (signers.containsAll(wasteRequest.participants.map { it.owningKey }))
 

@@ -3,6 +3,7 @@ package com.wasteDisposal.api
 import com.wasteDisposal.POJO.IssueWasteRequestPojo
 import com.wasteDisposal.POJO.ProposalPojo
 import com.wasteDisposal.POJO.ResponsePojo
+import com.wasteDisposal.POJO.SetProposalPojo
 import com.wasteDisposal.flow.ProposalFlow
 import com.wasteDisposal.flow.WasteRequestFlow
 import com.wasteDisposal.schema.ProposalSchemaV1
@@ -55,43 +56,43 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                                 @DefaultValue("pending") @QueryParam("status") status: String,
                                 @DefaultValue("unconsumed") @QueryParam("statusPropBC") statusPropBC: String): Response {
 
-        try{
+        try {
             var myPage = page
 
-            if(myPage < 1){
+            if (myPage < 1) {
                 myPage = 1
             }
 
             var myStatus = Vault.StateStatus.UNCONSUMED
 
-            when (statusPropBC){
+            when (statusPropBC) {
                 "consumed" -> myStatus = Vault.StateStatus.CONSUMED
                 "all" -> myStatus = Vault.StateStatus.ALL
             }
 
             val results = builder {
 
-                var criteria : QueryCriteria = QueryCriteria.VaultQueryCriteria(myStatus)
+                var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(myStatus)
 
 
-                if(idProposal.length > 0){
+                if (idProposal.length > 0) {
                     val customCriteria = QueryCriteria.LinearStateQueryCriteria(uuid = listOf(UUID.fromString(idProposal)), status = myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(codFornitore.length > 0){
+                if (codFornitore.length > 0) {
                     val idEqual = ProposalSchemaV1.PersistentProposal::codFornitore.equal(codFornitore)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(idEqual, myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(wasteType.length > 0){
+                if (wasteType.length > 0) {
                     val idEqual = ProposalSchemaV1.PersistentProposal::wasteType.equal(wasteType)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(idEqual, myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(from.length > 0 && to.length > 0){
+                if (from.length > 0 && to.length > 0) {
                     val format = SimpleDateFormat("yyyy-MM-dd")
                     val myFrom = format.parse(from)
                     val myTo = format.parse(to)
@@ -100,7 +101,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(status.length > 0){
+                if (status.length > 0) {
                     val statusEqual = ProposalSchemaV1.PersistentProposal::status.equal(status)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(statusEqual, myStatus)
                     criteria = criteria.and(customCriteria)
@@ -114,7 +115,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
 
                 return Response.ok(results).build()
             }
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
             val resp = ResponsePojo("ERROR", msg!!)
@@ -136,39 +137,39 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                                      @DefaultValue("pending") @QueryParam("status") status: String,
                                      @DefaultValue("unconsumed") @QueryParam("statusPropBC") statusPropBC: String): Response {
 
-        try{
+        try {
             var myPage = page
 
-            if(myPage < 1){
+            if (myPage < 1) {
                 myPage = 1
             }
 
             var myStatus = Vault.StateStatus.UNCONSUMED
 
-            when(statusPropBC){
+            when (statusPropBC) {
                 "consumed" -> myStatus = Vault.StateStatus.CONSUMED
                 "all" -> myStatus = Vault.StateStatus.ALL
             }
 
             val result = builder {
-                var criteria : QueryCriteria = QueryCriteria.VaultQueryCriteria(myStatus)
+                var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(myStatus)
 
                 val fornitoreEqual = ProposalSchemaV1.PersistentProposal::fornitore.equal(myLegalName.toString())
                 val firstCriteria = QueryCriteria.VaultCustomQueryCriteria(fornitoreEqual, myStatus)
                 criteria = criteria.and(firstCriteria)
 
-                if(idProposal.length > 0){
+                if (idProposal.length > 0) {
                     val customCriteria = QueryCriteria.LinearStateQueryCriteria(uuid = listOf(UUID.fromString(idProposal)), status = myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(codCliente.length > 0){
+                if (codCliente.length > 0) {
                     val idEqual = ProposalSchemaV1.PersistentProposal::codCliente.equal(codCliente)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(idEqual, myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(from.length > 0 && to.length > 0){
+                if (from.length > 0 && to.length > 0) {
                     val format = SimpleDateFormat("yyyy-MM-dd")
                     var myFrom = format.parse(from)
                     var myTo = format.parse(to)
@@ -177,7 +178,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                     criteria = criteria.and(customCriteria)
                 }
 
-                if(status.length > 0){
+                if (status.length > 0) {
                     val statusEqual = ProposalSchemaV1.PersistentProposal::status.equal(status)
                     val customCriteria = QueryCriteria.VaultCustomQueryCriteria(statusEqual, myStatus)
                     criteria = criteria.and(customCriteria)
@@ -191,7 +192,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
 
                 return Response.ok(results).build()
             }
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
             val resp = ResponsePojo("ERROR", msg!!)
@@ -206,10 +207,10 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     @Path("post/insertProposal")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun createProposal(req : ProposalPojo): Response {
+    fun createProposal(req: ProposalPojo): Response {
 
-        try{
-            val fornitore : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
+        try {
+            val fornitore: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
             val syndial: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Syndial,L=Milan,C=IT"))!!
 
             val signedTx = rpcOps.startTrackedFlow(
@@ -219,10 +220,10 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "transaction "+signedTx.toString()+" committed to ledger.")
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.")
             return Response.status(CREATED).entity(resp).build()
 
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
             val resp = ResponsePojo("ERROR", msg!!)
@@ -237,7 +238,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     @Path("post/issueWasteRequest")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun issueWasteRequest(req : IssueWasteRequestPojo): Response {
+    fun issueWasteRequest(req: IssueWasteRequestPojo): Response {
 
         try {
             val signedTx = rpcOps.startTrackedFlow(
@@ -245,10 +246,38 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                     req.id
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "transaction "+signedTx.toString()+" committed to ledger.")
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.")
             return Response.status(CREATED).entity(resp).build()
 
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
+            val msg = ex.message
+            logger.error(ex.message, ex)
+            val resp = ResponsePojo("ERROR", msg!!)
+            return Response.status(BAD_REQUEST).entity(resp).build()
+        }
+
+    }
+
+    /**
+     *  IssueUpdateProposal
+     */
+    @POST
+    @Path("post/issueUpdateProposal")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun issueUpdateProposal(req: SetProposalPojo): Response {
+
+        try {
+            val signedTx = rpcOps.startTrackedFlow(
+                    ProposalFlow::IssuerUpdateProposal,
+                    req.id,
+                    req.newStatus
+            ).returnValue.getOrThrow()
+
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.")
+            return Response.status(CREATED).entity(resp).build()
+
+        } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
             val resp = ResponsePojo("ERROR", msg!!)

@@ -20,6 +20,7 @@ class ProposalContract : Contract {
             val setOfSigners = command.signers.toSet()
             when (command.value) {
                 is Commands.Create -> verifyCreate(tx, setOfSigners)
+                is Commands.IssueUpdate -> verifyIssueUpdate(tx, setOfSigners)
                 is Commands.End -> verifyEnd(tx, setOfSigners)
                 else -> throw IllegalArgumentException("Unrecognised command.")
             }
@@ -28,6 +29,7 @@ class ProposalContract : Contract {
 
     interface Commands : CommandData {
         class Create : Commands, TypeOnlyCommandData()
+        class IssueUpdate : Commands, TypeOnlyCommandData()
         class End : Commands, TypeOnlyCommandData()
         //class Settle : TypeOnlyCommandData(), Commands
     }
@@ -48,6 +50,26 @@ class ProposalContract : Contract {
         "proposal status must be 'pending' or 'denied'" using (proposal.status.equals("pending", ignoreCase = true) || proposal.status.equals("denied", ignoreCase = true))
 
         "All of the participants must be signers." using (signers.containsAll(proposal.participants.map { it.owningKey }))
+    }
+
+    private fun verifyIssueUpdate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
+        //oldProposal
+        "there must be only one input" using (tx.inputStates.size == 1)
+        val oldProposal = tx.inputsOfType<ProposalState>().single()
+
+        //newProposal
+        "Only one transaction state should be created." using (tx.outputStates.size == 1)
+        val newProposal = tx.outputsOfType<ProposalState>().single()
+        "cliente must be the same" using (oldProposal.cliente == newProposal.cliente)
+        "fornitore must be the same" using (oldProposal.fornitore == newProposal.fornitore)
+        "wasteType must be the same" using (oldProposal.wasteType == newProposal.wasteType)
+        "wasteWeight must be the same" using (oldProposal.wasteWeight == newProposal.wasteWeight)
+        "wasteGps must be the same" using (oldProposal.wasteGps == newProposal.wasteGps)
+        "oldProposal: "+oldProposal.requestDate+" is not valid" using (oldProposal.requestDate < oldProposal.validity)
+        "status cannot be the same" using (oldProposal.status != newProposal.status)
+        "newProposal status must be 'denied'" using (newProposal.status.equals("denied", ignoreCase = true))
+
+        "All of the participants must be signers." using (signers.containsAll(newProposal.participants.map { it.owningKey }))
     }
 
     private fun verifyEnd(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {

@@ -160,13 +160,20 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "transaction "+signedTx.toString()+" committed to ledger.")
+            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
+            val result = rpcOps.vaultQueryBy<WasteRequestState>(
+                    criteria,
+                    PageSpecification(1, DEFAULT_PAGE_SIZE),
+                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
+            ).states.get(0)
+
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
             return Response.status(CREATED).entity(resp).build()
 
         }catch (ex: Throwable){
             val msg = ex.message
             logger.error(ex.message, ex)
-            val resp = ResponsePojo("ERROR", msg!!)
+            val resp = ResponsePojo("ERROR", msg!!, "")
             return Response.status(BAD_REQUEST).entity(resp).build()
         }
     }
@@ -187,13 +194,20 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
                     req.newStatus
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.")
+            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
+            val result = rpcOps.vaultQueryBy<WasteRequestState>(
+                    criteria,
+                    PageSpecification(1, DEFAULT_PAGE_SIZE),
+                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
+            ).states.get(0)
+
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
             return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
-            val resp = ResponsePojo("ERROR", msg!!)
+            val resp = ResponsePojo("ERROR", msg!!, "")
             return Response.status(BAD_REQUEST).entity(resp).build()
         }
     }

@@ -22,6 +22,7 @@ class WasteRequestContract : Contract {
             when (command.value) {
                 is Commands.Create -> verifyCreate(tx, setOfSigners)
                 is Commands.Issue -> verifyIssue(tx, setOfSigners)
+                is Commands.IssueUpdate -> verifyIssueUpdate(tx, setOfSigners)
                 else -> throw IllegalArgumentException("Unrecognised command.")
             }
         }
@@ -30,6 +31,7 @@ class WasteRequestContract : Contract {
     interface Commands : CommandData {
         class Create : Commands
         class Issue : Commands
+        class IssueUpdate: Commands
     }
 
     private fun verifyCreate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
@@ -71,5 +73,24 @@ class WasteRequestContract : Contract {
         "wasteGps must be equal" using (proposal.wasteGps == wasteRequest.wasteGps)
         "proposal status cannot be 'rejected'" using (!proposal.status.equals("rejected", ignoreCase = true))
         "linearId must be idProposal" using (proposal.linearId.id.toString() == wasteRequest.idProposal)
+    }
+
+    private fun verifyIssueUpdate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
+        //oldWasteRequest
+        "there must be only one input" using (tx.inputStates.size == 1)
+        val oldWasteRequest = tx.inputsOfType<WasteRequestState>().single()
+
+        //newWasteRequest
+        "Only one transaction state should be created." using (tx.outputStates.size == 1)
+        val newWasteRequest = tx.outputsOfType<WasteRequestState>().single()
+        "cliente must be the same" using (oldWasteRequest.cliente == newWasteRequest.cliente)
+        "fornitore must be the same" using (oldWasteRequest.fornitore == newWasteRequest.fornitore)
+        "wasteType must be the same" using (oldWasteRequest.wasteType == newWasteRequest.wasteType)
+        "wasteWeight must be the same" using (oldWasteRequest.wasteWeight == newWasteRequest.wasteWeight)
+        "wasteGps must be the same" using (oldWasteRequest.wasteGps == newWasteRequest.wasteGps)
+        "status cannot be the same" using (oldWasteRequest.status != newWasteRequest.status)
+        "newProposal status must be 'denied'" using (newWasteRequest.status.equals("completed", ignoreCase = true))
+
+        "All of the participants must be signers." using (signers.containsAll(newWasteRequest.participants.map { it.owningKey }))
     }
 }

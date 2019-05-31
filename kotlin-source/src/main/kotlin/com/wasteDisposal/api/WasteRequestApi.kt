@@ -1,6 +1,7 @@
 package com.wasteDisposal.api
 
 import com.wasteDisposal.POJO.ResponsePojo
+import com.wasteDisposal.POJO.SetWasteRequestPojo
 import com.wasteDisposal.POJO.WasteRequestPojo
 import com.wasteDisposal.flow.WasteRequestFlow
 import com.wasteDisposal.schema.WasteRequestSchemaV1
@@ -163,6 +164,33 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
             return Response.status(CREATED).entity(resp).build()
 
         }catch (ex: Throwable){
+            val msg = ex.message
+            logger.error(ex.message, ex)
+            val resp = ResponsePojo("ERROR", msg!!)
+            return Response.status(BAD_REQUEST).entity(resp).build()
+        }
+    }
+
+    /**
+     *  IssueUpdateWasteRequest
+     */
+    @POST
+    @Path("post/issueUpdateWasteRequest")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun issueUpdateProposal(req: SetWasteRequestPojo): Response {
+
+        try {
+            val signedTx = rpcOps.startTrackedFlow(
+                    WasteRequestFlow::IssuerUpdateWasteRequest, // qui
+                    req.id,
+                    req.newStatus
+            ).returnValue.getOrThrow()
+
+            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.")
+            return Response.status(CREATED).entity(resp).build()
+
+        } catch (ex: Exception) {
             val msg = ex.message
             logger.error(ex.message, ex)
             val resp = ResponsePojo("ERROR", msg!!)

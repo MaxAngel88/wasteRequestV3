@@ -305,4 +305,152 @@ object WasteRequestFlow {
             return subFlow(signTransactionFlow)
         }
     }
+
+    @InitiatingFlow
+    @StartableByRPC
+    class IssuerUpdateWasteRequest(
+            val wasteRequestId: String,
+            val newStatus : String
+    ) : FlowLogic<SignedTransaction>() {
+        /**
+         * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
+         * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
+         */
+        companion object {
+            object GENERATING_TRANSACTION : ProgressTracker.Step("Generating transaction based on new IOU.")
+            object VERIFYING_TRANSACTION : ProgressTracker.Step("Verifying contract constraints.")
+            object SIGNING_TRANSACTION : ProgressTracker.Step("Signing transaction with our private key.")
+            object GATHERING_SIGS : ProgressTracker.Step("Gathering the counterparty's signature.") {
+                override fun childProgressTracker() = CollectSignaturesFlow.tracker()
+            }
+
+            object FINALISING_TRANSACTION : ProgressTracker.Step("Obtaining notary signature and recording transaction.") {
+                override fun childProgressTracker() = FinalityFlow.tracker()
+            }
+
+            fun tracker() = ProgressTracker(
+                    GENERATING_TRANSACTION,
+                    VERIFYING_TRANSACTION,
+                    SIGNING_TRANSACTION,
+                    GATHERING_SIGS,
+                    FINALISING_TRANSACTION
+            )
+        }
+
+        override val progressTracker = tracker()
+
+        /**
+         * The flow logic is encapsulated within the call() method.
+         */
+        @Suspendable
+        override fun call(): SignedTransaction {
+
+            // Obtain a reference to the notary we want to use.
+            val notary = serviceHub.networkMapCache.notaryIdentities[0]
+
+
+            // Stage 1.
+            progressTracker.currentStep = GENERATING_TRANSACTION
+            // Generate an unsigned transaction.
+            var criteria : QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
+            val customCriteria = QueryCriteria.LinearStateQueryCriteria(uuid = listOf(UUID.fromString(wasteRequestId)))
+            criteria = criteria.and(customCriteria)
+
+            val oldWasteRequestStates = serviceHub.vaultService.queryBy<WasteRequestState>(
+                    criteria,
+                    PageSpecification(1, MAX_PAGE_SIZE),
+                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
+            ).states
+
+            if(oldWasteRequestStates.size > 1 || oldWasteRequestStates.size == 0) throw FlowException("no proposal state with UUID "+UUID.fromString(wasteRequestId)+" found")
+
+            val oldWasteRequestStateRef = oldWasteRequestStates.get(0)
+            val oldWasteRequestState = oldWasteRequestStateRef.state.data
+
+            val newWasteRequestState = WasteRequestState(
+                    oldWasteRequestState.cliente,
+                    oldWasteRequestState.fornitore,
+                    oldWasteRequestState.syndial,
+                    oldWasteRequestState.codCliente,
+                    oldWasteRequestState.codFornitore,
+                    oldWasteRequestState.requestDate,
+                    oldWasteRequestState.wasteType,
+                    oldWasteRequestState.wasteWeight,
+                    oldWasteRequestState.wasteDesc,
+                    oldWasteRequestState.wasteDescAmm,
+                    oldWasteRequestState.wasteGps,
+                    oldWasteRequestState.idProposal,
+                    newStatus,
+                    UniqueIdentifier(id = UUID.randomUUID()))
+
+
+            val wasteRequestCommand = Command(WasteRequestContract.Commands.IssueUpdate(), newWasteRequestState.participants.map { it.owningKey })
+            val proposalBuilder = TransactionBuilder(notary)
+                    .addInputState(oldWasteRequestStateRef)
+                    .addOutputState(newWasteRequestState, WASTE_REQUEST_CONTRACT_ID)
+                    .addCommand(wasteRequestCommand)
+
+
+            // Stage 2.
+            progressTracker.currentStep = VERIFYING_TRANSACTION
+            // Verify that the transaction is valid.
+            proposalBuilder.verify(serviceHub)
+
+            // Stage 3.
+            progressTracker.currentStep = SIGNING_TRANSACTION
+            // Sign the transaction.
+            val partSignedTx = serviceHub.signInitialTransaction(proposalBuilder)
+
+            // Stage 4.
+            progressTracker.currentStep = GATHERING_SIGS
+
+
+            var firstFlow : FlowSession? = null
+            var secondFlow : FlowSession? = null
+
+            // Send the state to the counterparty, and receive it back with their signature.
+            when(serviceHub.myInfo.legalIdentities.first()){
+
+                newWasteRequestState.fornitore -> {
+                    firstFlow = initiateFlow(newWasteRequestState.cliente)
+                    secondFlow = initiateFlow(newWasteRequestState.syndial)
+                }
+
+                newWasteRequestState.cliente -> {
+                    firstFlow = initiateFlow(newWasteRequestState.fornitore)
+                    secondFlow = initiateFlow(newWasteRequestState.syndial)
+                }
+
+                newWasteRequestState.syndial -> {
+                    firstFlow = initiateFlow(newWasteRequestState.cliente)
+                    secondFlow = initiateFlow(newWasteRequestState.fornitore)
+                }
+
+                else -> throw FlowException("node "+serviceHub.myInfo.legalIdentities.first()+" cannot start the flow")
+            }
+
+
+            val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(firstFlow!!, secondFlow!!), GATHERING_SIGS.childProgressTracker()))
+
+            // Stage 5.
+            progressTracker.currentStep = FINALISING_TRANSACTION
+            // Notarise and record the transaction in both parties' vaults.
+
+            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+        }
+    }
+
+    @InitiatedBy(IssuerUpdateWasteRequest::class)
+    class IssuerUpdateAcceptor(val otherPartyFlow: FlowSession) : FlowLogic<SignedTransaction>() {
+        @Suspendable
+        override fun call(): SignedTransaction {
+            val signTransactionFlow = object : SignTransactionFlow(otherPartyFlow) {
+                override fun checkTransaction(stx: SignedTransaction) = requireThat {
+
+                }
+            }
+
+            return subFlow(signTransactionFlow)
+        }
+    }
 }

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-cd /root/cordaSnam/kotlin-source/build/nodes
+cd /root/cordaWasteDisposal/kotlin-source/build/nodes
 cd Notary
 java -jar corda.jar &
 sleep 60
 cd ..
 
 
-cd Sman
+cd Syndial
 java -jar corda.jar &
 sleep 2
 java -jar corda-webserver.jar &
@@ -15,7 +15,7 @@ sleep 60
 cd ..
 
 
-cd EMI
+cd Cliente
 java -jar corda.jar &
 sleep 2
 java -jar corda-webserver.jar &
@@ -23,16 +23,9 @@ sleep 60
 cd ..
 
 
-cd Songenia
+cd Fornitore
 java -jar corda.jar &
 sleep 2
 java -jar corda-webserver.jar &
 sleep 60
-cd ..
-
-
-cd Edifon
-java -jar corda.jar &
-sleep 2
-java -jar corda-webserver.jar &
 sleep infinity

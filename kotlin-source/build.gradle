@@ -12,7 +12,7 @@ apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
-jar.baseName = "cordapp-snam"
+jar.baseName = "cordapp-wasteDisposal"
 
 sourceSets {
     main {

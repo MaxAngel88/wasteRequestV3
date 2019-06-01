@@ -49,8 +49,6 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     fun getWasteRequestByParams(@DefaultValue("1") @QueryParam("page") page: Int,
                                 @DefaultValue("") @QueryParam("wasteType") wasteType: String,
-                                @DefaultValue("") @QueryParam("cliente") cliente: String,
-                                @DefaultValue("") @QueryParam("fornitore") fornitore: String,
                                 @DefaultValue("") @QueryParam("idWasteRequest") idWasteRequest: String,
                                 @DefaultValue("") @QueryParam("wasteGps") wasteGps: String,
                                 @DefaultValue("1990-01-01") @QueryParam("from") from: String,
@@ -77,18 +75,6 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
 
                 if(idWasteRequest.length > 0){
                     val customCriteria = QueryCriteria.LinearStateQueryCriteria( uuid = listOf(UUID.fromString(idWasteRequest)), status = myStatus)
-                    criteria = criteria.and(customCriteria)
-                }
-
-                if(cliente.length >0){
-                    val clienteEqual = WasteRequestSchemaV1.PersistentWasteRequest::clienteName.equal(cliente)
-                    val customCriteria = QueryCriteria.VaultCustomQueryCriteria(clienteEqual, myStatus)
-                    criteria = criteria.and(customCriteria)
-                }
-
-                if(fornitore.length >0){
-                    val fornitoreEqual = WasteRequestSchemaV1.PersistentWasteRequest::fornitoreName.equal(fornitore)
-                    val customCriteria = QueryCriteria.VaultCustomQueryCriteria(fornitoreEqual, myStatus)
                     criteria = criteria.and(customCriteria)
                 }
 

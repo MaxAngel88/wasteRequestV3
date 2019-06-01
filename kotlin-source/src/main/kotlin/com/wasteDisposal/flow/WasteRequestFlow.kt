@@ -34,7 +34,7 @@ object WasteRequestFlow {
             val cliente: Party,
             val fornitore: Party,
             val syndial: Party,
-            val properties: WasteRequestPojo) : FlowLogic<SignedTransaction>() {
+            val properties: WasteRequestPojo) : FlowLogic<WasteRequestState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
@@ -66,7 +66,7 @@ object WasteRequestFlow {
          * The flow logic is encapsulated within the call() method.
          */
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WasteRequestState {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -137,7 +137,8 @@ object WasteRequestFlow {
             // Stage 5.
             progressTracker.currentStep = FINALISING_TRANSACTION
             // Notarise and record the transaction in both parties' vaults.
-            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            return wasteRequestState
         }
     }
 
@@ -160,8 +161,7 @@ object WasteRequestFlow {
     @InitiatingFlow
     @StartableByRPC
     class Issuer(
-            val proposalId: String
-    ) : FlowLogic<SignedTransaction>() {
+            val proposalId: String) : FlowLogic<WasteRequestState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
@@ -193,7 +193,7 @@ object WasteRequestFlow {
          * The flow logic is encapsulated within the call() method.
          */
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WasteRequestState {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -288,7 +288,8 @@ object WasteRequestFlow {
             progressTracker.currentStep = FINALISING_TRANSACTION
             // Notarise and record the transaction in both parties' vaults.
 
-            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            return wasteRequestState
         }
     }
 
@@ -310,8 +311,7 @@ object WasteRequestFlow {
     @StartableByRPC
     class IssuerUpdateWasteRequest(
             val wasteRequestId: String,
-            val newStatus : String
-    ) : FlowLogic<SignedTransaction>() {
+            val newStatus : String) : FlowLogic<WasteRequestState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
@@ -343,7 +343,7 @@ object WasteRequestFlow {
          * The flow logic is encapsulated within the call() method.
          */
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WasteRequestState {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -436,7 +436,8 @@ object WasteRequestFlow {
             progressTracker.currentStep = FINALISING_TRANSACTION
             // Notarise and record the transaction in both parties' vaults.
 
-            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            return newWasteRequestState
         }
     }
 

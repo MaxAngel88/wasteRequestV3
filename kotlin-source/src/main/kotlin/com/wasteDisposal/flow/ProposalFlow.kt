@@ -35,7 +35,7 @@ object ProposalFlow {
     class Starter(
             val fornitore: Party,
             val syndial: Party,
-            val properties: ProposalPojo) : FlowLogic<SignedTransaction>() {
+            val properties: ProposalPojo) : FlowLogic<ProposalState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
@@ -67,7 +67,7 @@ object ProposalFlow {
          * The flow logic is encapsulated within the call() method.
          */
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): ProposalState {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -124,7 +124,8 @@ object ProposalFlow {
             progressTracker.currentStep = FINALISING_TRANSACTION
             // Notarise and record the transaction in both parties' vaults.
 
-            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            return proposalState
         }
     }
 
@@ -239,8 +240,7 @@ object ProposalFlow {
     @StartableByRPC
     class IssuerUpdateProposal(
             val proposalId: String,
-            val newStatus : String
-    ) : FlowLogic<SignedTransaction>() {
+            val newStatus : String) : FlowLogic<ProposalState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
@@ -272,7 +272,7 @@ object ProposalFlow {
          * The flow logic is encapsulated within the call() method.
          */
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): ProposalState {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -367,7 +367,8 @@ object ProposalFlow {
             progressTracker.currentStep = FINALISING_TRANSACTION
             // Notarise and record the transaction in both parties' vaults.
 
-            return subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            return newProposalState
         }
     }
 

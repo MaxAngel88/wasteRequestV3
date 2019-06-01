@@ -25,13 +25,13 @@ object WasteRequestSchemaV1 : MappedSchema(
     class PersistentWasteRequest(
 
             @Column(name = "cliente")
-            var clienteName: String,
-
-            @Column(name = "fornitore")
-            var fornitoreName: String,
+            var cliente: String,
 
             @Column(name = "syndial")
-            var syndialName: String,
+            var syndial: String,
+
+            @Column(name = "fornitore")
+            var fornitore: String,
 
             @Column(name = "codCliente")
             var codCliente: String,

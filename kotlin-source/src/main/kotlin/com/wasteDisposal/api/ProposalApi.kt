@@ -216,8 +216,8 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
 
             val proposal = rpcOps.startTrackedFlow(
                     ProposalFlow::Starter,
-                    fornitore,
                     syndial,
+                    fornitore,
                     req
             ).returnValue.getOrThrow()
 

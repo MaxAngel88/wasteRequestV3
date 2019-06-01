@@ -155,8 +155,8 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
             val wasteRequest = rpcOps.startTrackedFlow(
                     WasteRequestFlow::Starter,
                     cliente,
-                    fornitore,
                     syndial,
+                    fornitore,
                     req
             ).returnValue.getOrThrow()
 
@@ -182,7 +182,7 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
 
         try {
             val wasteRequest = rpcOps.startTrackedFlow(
-                    WasteRequestFlow::IssuerUpdateWasteRequest, // qui
+                    WasteRequestFlow::IssuerUpdateWasteRequest,
                     req.id,
                     req.newStatus
             ).returnValue.getOrThrow()

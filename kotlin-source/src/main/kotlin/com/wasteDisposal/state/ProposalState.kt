@@ -15,8 +15,8 @@ import java.util.*
 
 data class ProposalState (
         val cliente: Party,
-        val fornitore: Party,
         val syndial: Party,
+        val fornitore: Party,
 
         val codCliente: String,
         val codFornitore: String,
@@ -31,7 +31,7 @@ data class ProposalState (
 
         override val linearId: UniqueIdentifier = UniqueIdentifier()): LinearState, QueryableState, SchedulableState {
 
-    override val participants: List<AbstractParty> get() = listOf(cliente, fornitore, syndial)
+    override val participants: List<AbstractParty> get() = listOf(cliente, syndial, fornitore)
 
 
     override fun nextScheduledActivity(thisStateRef: StateRef, flowLogicRefFactory: FlowLogicRefFactory): ScheduledActivity? {
@@ -42,8 +42,8 @@ data class ProposalState (
         return when (schema) {
             is ProposalSchemaV1 -> ProposalSchemaV1.PersistentProposal(
                     this.cliente.name.toString(),
-                    this.fornitore.name.toString(),
                     this.syndial.name.toString(),
+                    this.fornitore.name.toString(),
                     this.codCliente,
                     this.codFornitore,
                     this.requestDate,

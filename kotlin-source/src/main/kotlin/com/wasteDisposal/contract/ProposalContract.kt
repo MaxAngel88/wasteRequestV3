@@ -40,9 +40,7 @@ class ProposalContract : Contract {
 
         "Only one transaction state should be created." using (tx.outputStates.size == 1)
         val proposal = tx.outputsOfType<ProposalState>().single()
-        "issuer and counterpart cannot be the same" using (proposal.cliente != proposal.fornitore)
-        "codCliente cannot be empty" using (proposal.codCliente.isNotEmpty())
-        "codFornitore cannot be empty" using (proposal.codFornitore.isNotEmpty())
+        "cliente and fornitore cannot be the same" using (proposal.cliente != proposal.fornitore)
         "validity must be grather than date" using (proposal.validity > proposal.requestDate)
         "wasteType cannot be empty" using (proposal.wasteType.isNotEmpty())
         "wasteWeight must be grather than 0" using (proposal.wasteWeight > 0.0)

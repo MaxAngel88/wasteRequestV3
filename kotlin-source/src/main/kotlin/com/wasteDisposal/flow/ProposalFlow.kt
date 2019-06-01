@@ -71,9 +71,15 @@ object ProposalFlow {
 
             // Obtain a reference to the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryIdentities[0]
+            val myLegalIdentity = serviceHub.myInfo.legalIdentities.first()
 
             // Stage 1.
             progressTracker.currentStep = GENERATING_TRANSACTION
+
+            if(myLegalIdentity.name.organisation != "Cliente"){
+                throw FlowException("cannot start Proposal flow from this node")
+            }
+
             // Generate an unsigned transaction.
             val proposalState = ProposalState(
                     serviceHub.myInfo.legalIdentities.first(),
@@ -109,12 +115,32 @@ object ProposalFlow {
             // Stage 4.
             progressTracker.currentStep = GATHERING_SIGS
 
-            var syndialFlow : FlowSession = initiateFlow(syndial)
-            var fornitoreFlow : FlowSession = initiateFlow(fornitore)
+            var firstFlow : FlowSession? = null
+            var secondFlow : FlowSession? = null
+
+            // Send the state to the counterparty, and receive it back with their signature.
+            when(serviceHub.myInfo.legalIdentities.first()){
+
+                proposalState.fornitore -> {
+                    firstFlow = initiateFlow(proposalState.cliente)
+                    secondFlow = initiateFlow(proposalState.syndial)
+                }
+
+                proposalState.cliente -> {
+                    firstFlow = initiateFlow(proposalState.fornitore)
+                    secondFlow = initiateFlow(proposalState.syndial)
+                }
+
+                proposalState.syndial -> {
+                    firstFlow = initiateFlow(proposalState.cliente)
+                    secondFlow = initiateFlow(proposalState.fornitore)
+                }
+
+                else -> throw FlowException("node "+serviceHub.myInfo.legalIdentities.first()+" cannot start the flow")
+            }
 
             // Send the state to the fornitore, and receive it back with their signature.
-
-            val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(syndialFlow, fornitoreFlow), GATHERING_SIGS.childProgressTracker()))
+            val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(firstFlow, secondFlow), GATHERING_SIGS.childProgressTracker()))
 
 
             //DEBUG
@@ -204,13 +230,32 @@ object ProposalFlow {
                 // Stage 4.
                 progressTracker.currentStep = GATHERING_SIGS
 
-
-                var syndialFlow : FlowSession = initiateFlow(proposalState.syndial)
-                var fornitoreFlow : FlowSession = initiateFlow(proposalState.fornitore)
+                var firstFlow : FlowSession? = null
+                var secondFlow : FlowSession? = null
 
                 // Send the state to the counterparty, and receive it back with their signature.
+                when(serviceHub.myInfo.legalIdentities.first()){
 
-                val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(syndialFlow, fornitoreFlow), GATHERING_SIGS.childProgressTracker()))
+                    proposalState.fornitore -> {
+                        firstFlow = initiateFlow(proposalState.cliente)
+                        secondFlow = initiateFlow(proposalState.syndial)
+                    }
+
+                    proposalState.cliente -> {
+                        firstFlow = initiateFlow(proposalState.fornitore)
+                        secondFlow = initiateFlow(proposalState.syndial)
+                    }
+
+                    proposalState.syndial -> {
+                        firstFlow = initiateFlow(proposalState.cliente)
+                        secondFlow = initiateFlow(proposalState.fornitore)
+                    }
+
+                    else -> throw FlowException("node "+serviceHub.myInfo.legalIdentities.first()+" cannot start the flow")
+                }
+
+                // Send the state to the counterparty, and receive it back with their signature.
+                val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(firstFlow, secondFlow), GATHERING_SIGS.childProgressTracker()))
 
                 // Stage 5.
                 progressTracker.currentStep = FINALISING_TRANSACTION
@@ -360,7 +405,7 @@ object ProposalFlow {
                 else -> throw FlowException("node "+serviceHub.myInfo.legalIdentities.first()+" cannot start the flow")
             }
 
-
+            // Send the state to the counterparty, and receive it back with their signature.
             val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(firstFlow!!, secondFlow!!), GATHERING_SIGS.childProgressTracker()))
 
             // Stage 5.

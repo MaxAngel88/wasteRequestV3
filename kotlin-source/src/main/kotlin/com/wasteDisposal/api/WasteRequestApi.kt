@@ -152,7 +152,7 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
             val fornitore : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
             val syndial : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Syndial,L=Milan,C=IT"))!!
 
-            val signedTx = rpcOps.startTrackedFlow(
+            val wasteRequest = rpcOps.startTrackedFlow(
                     WasteRequestFlow::Starter,
                     cliente,
                     fornitore,
@@ -160,14 +160,7 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-            val result = rpcOps.vaultQueryBy<WasteRequestState>(
-                    criteria,
-                    PageSpecification(1, DEFAULT_PAGE_SIZE),
-                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
-            ).states.get(0)
-
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
+            val resp = ResponsePojo("SUCCESS", "New WasteRequest committed to ledger.", wasteRequest)
             return Response.status(CREATED).entity(resp).build()
 
         }catch (ex: Throwable){
@@ -188,20 +181,13 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
     fun issueUpdateProposal(req: SetWasteRequestPojo): Response {
 
         try {
-            val signedTx = rpcOps.startTrackedFlow(
+            val wasteRequest = rpcOps.startTrackedFlow(
                     WasteRequestFlow::IssuerUpdateWasteRequest, // qui
                     req.id,
                     req.newStatus
             ).returnValue.getOrThrow()
 
-            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-            val result = rpcOps.vaultQueryBy<WasteRequestState>(
-                    criteria,
-                    PageSpecification(1, DEFAULT_PAGE_SIZE),
-                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
-            ).states.get(0)
-
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
+            val resp = ResponsePojo("SUCCESS", "WasteRequest updated to ledger.", wasteRequest)
             return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {

@@ -214,22 +214,14 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
             val fornitore: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
             val syndial: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Syndial,L=Milan,C=IT"))!!
 
-            val signedTx = rpcOps.startTrackedFlow(
+            val proposal = rpcOps.startTrackedFlow(
                     ProposalFlow::Starter,
                     fornitore,
                     syndial,
                     req
             ).returnValue.getOrThrow()
 
-            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-            val result = rpcOps.vaultQueryBy<ProposalState>(
-                    criteria,
-                    PageSpecification(1, DEFAULT_PAGE_SIZE),
-                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
-            ).states.get(0)
-
-
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
+            val resp = ResponsePojo("SUCCESS", "New Proposal committed to ledger.", proposal)
             return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {
@@ -250,20 +242,12 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     fun issueWasteRequest(req: IssueWasteRequestPojo): Response {
 
         try {
-            val signedTx = rpcOps.startTrackedFlow(
+            val wasteRequest = rpcOps.startTrackedFlow(
                     WasteRequestFlow::Issuer,
                     req.id
             ).returnValue.getOrThrow()
 
-            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-            val result = rpcOps.vaultQueryBy<WasteRequestState>(
-                    criteria,
-                    PageSpecification(1, DEFAULT_PAGE_SIZE),
-                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
-            ).states.get(0)
-
-
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
+            val resp = ResponsePojo("SUCCESS", "New WasteRequest committed to ledger.", wasteRequest)
             return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {
@@ -285,21 +269,13 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     fun issueUpdateProposal(req: SetProposalPojo): Response {
 
         try {
-            val signedTx = rpcOps.startTrackedFlow(
+            val proposal = rpcOps.startTrackedFlow(
                     ProposalFlow::IssuerUpdateProposal,
                     req.id,
                     req.newStatus
             ).returnValue.getOrThrow()
 
-            var criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-            val result = rpcOps.vaultQueryBy<ProposalState>(
-                    criteria,
-                    PageSpecification(1, DEFAULT_PAGE_SIZE),
-                    Sort(setOf(Sort.SortColumn(SortAttribute.Standard(Sort.VaultStateAttribute.RECORDED_TIME), Sort.Direction.DESC)))
-            ).states.get(0)
-
-
-            val resp = ResponsePojo("SUCCESS", "transaction " + signedTx.toString() + " committed to ledger.", result.state.data.linearId.id.toString())
+            val resp = ResponsePojo("SUCCESS", "Proposal updated to ledger.", proposal)
             return Response.status(CREATED).entity(resp).build()
 
 

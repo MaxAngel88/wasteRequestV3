@@ -33,8 +33,8 @@ object ProposalFlow {
     @InitiatingFlow
     @StartableByRPC
     class Starter(
-            val syndial: Party,
             val fornitore: Party,
+            val syndial: Party,
             val properties: ProposalPojo) : FlowLogic<ProposalState>() {
         /**
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
@@ -83,8 +83,8 @@ object ProposalFlow {
             // Generate an unsigned transaction.
             val proposalState = ProposalState(
                     serviceHub.myInfo.legalIdentities.first(),
-                    syndial,
                     fornitore,
+                    syndial,
                     properties.codCliente,
                     properties.codFornitore,
                     properties.requestDate,
@@ -307,8 +307,8 @@ object ProposalFlow {
 
             val newProposalState = ProposalState(
                     oldProposalState.cliente,
-                    oldProposalState.syndial,
                     oldProposalState.fornitore,
+                    oldProposalState.syndial,
                     oldProposalState.codCliente,
                     oldProposalState.codFornitore,
                     oldProposalState.requestDate,

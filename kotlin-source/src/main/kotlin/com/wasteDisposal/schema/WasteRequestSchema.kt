@@ -27,11 +27,11 @@ object WasteRequestSchemaV1 : MappedSchema(
             @Column(name = "cliente")
             var cliente: String,
 
-            @Column(name = "syndial")
-            var syndial: String,
-
             @Column(name = "fornitore")
             var fornitore: String,
+
+            @Column(name = "syndial")
+            var syndial: String,
 
             @Column(name = "codCliente")
             var codCliente: String,

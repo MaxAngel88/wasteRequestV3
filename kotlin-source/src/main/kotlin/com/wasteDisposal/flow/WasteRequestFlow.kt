@@ -224,8 +224,8 @@ object WasteRequestFlow {
 
             val wasteRequestState = WasteRequestState(
                     proposalState.cliente,
-                    proposalState.syndial,
                     proposalState.fornitore,
+                    proposalState.syndial,
                     proposalState.codCliente,
                     proposalState.codFornitore,
                     proposalState.requestDate,
@@ -354,8 +354,8 @@ object WasteRequestFlow {
 
             val newWasteRequestState = WasteRequestState(
                     oldWasteRequestState.cliente,
-                    oldWasteRequestState.syndial,
                     oldWasteRequestState.fornitore,
+                    oldWasteRequestState.syndial,
                     oldWasteRequestState.codCliente,
                     oldWasteRequestState.codFornitore,
                     oldWasteRequestState.requestDate,

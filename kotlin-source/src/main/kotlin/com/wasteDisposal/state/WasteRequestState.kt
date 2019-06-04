@@ -22,8 +22,8 @@ import java.time.Instant
  */
 data class WasteRequestState(
         val cliente : Party,
-        val syndial : Party,
         val fornitore: Party,
+        val syndial : Party,
         val codCliente: String,
         val codFornitore: String,
         val requestDate: Instant,
@@ -46,7 +46,6 @@ data class WasteRequestState(
                     this.cliente.name.toString(),
                     this.fornitore.name.toString(),
                     this.syndial.name.toString(),
-
                     this.codCliente,
                     this.codFornitore,
                     this.requestDate,

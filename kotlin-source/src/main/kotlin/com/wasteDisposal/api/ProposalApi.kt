@@ -11,6 +11,7 @@ import com.wasteDisposal.state.ProposalState
 import com.wasteDisposal.state.WasteRequestState
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
+import net.corda.core.internal.x500Name
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.messaging.vaultQueryBy
@@ -216,8 +217,8 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
 
             val proposal = rpcOps.startTrackedFlow(
                     ProposalFlow::Starter,
-                    syndial,
                     fornitore,
+                    syndial,
                     req
             ).returnValue.getOrThrow()
 

@@ -11,7 +11,7 @@ data class ProposalPojo(
         val fornitore: String = "",
         val codCliente: String = "",
         val codFornitore: String = "",
-        val requestDate: Instant = Instant.now(),
+        val requestDate: Instant = Instant.now().minusSeconds(200),
         val wasteType: String = "",
         val wasteWeight: Double = 0.0,
         val wasteDesc: String = "",

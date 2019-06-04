@@ -21,6 +21,7 @@ import khttp.post
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.*
+import java.io.File
 
 /**
  * MAKE A SAME COPY OF THIS PACKAGE UNDER: contract-kotlin/src/com.example/ TO PERMIT IMPORT OF PROPOSALFLOW
@@ -80,6 +81,8 @@ object ProposalFlow {
             // Stage 1.
             progressTracker.currentStep = GENERATING_TRANSACTION
 
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 1")
+
             // Generate an unsigned transaction.
             val proposalState = ProposalState(
                     serviceHub.myInfo.legalIdentities.first(),
@@ -102,25 +105,37 @@ object ProposalFlow {
                     .addOutputState(proposalState, PROPOSAL_CONTRACT_ID)
                     .addCommand(txCommand)
 
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 1.5")
+
             // Stage 2.
             progressTracker.currentStep = VERIFYING_TRANSACTION
             // Verify that the transaction is valid.
             txBuilder.verify(serviceHub)
+
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 2")
 
             // Stage 3.
             progressTracker.currentStep = SIGNING_TRANSACTION
             // Sign the transaction.
             val partSignedTx = serviceHub.signInitialTransaction(txBuilder)
 
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 3")
+
             // Stage 4.
             progressTracker.currentStep = GATHERING_SIGS
 
-            var syndialFlow : FlowSession = initiateFlow(proposalState.syndial)
-            var fornitoreFlow : FlowSession = initiateFlow(proposalState.fornitore)
+            var syndialFlow : FlowSession = initiateFlow(syndial)
+
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 4Syndial")
+
+            var fornitoreFlow : FlowSession = initiateFlow(fornitore)
+
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 4Fornitore")
 
             // Send the state to syndial and fornitore, then receive it back with their signature.
             val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(syndialFlow, fornitoreFlow), GATHERING_SIGS.childProgressTracker()))
 
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 4TotalSign")
 
             //DEBUG
             //logger.info(get("http://httpbin.org/ip").jsonObject.getString("origin"))
@@ -130,6 +145,7 @@ object ProposalFlow {
             // Notarise and record the transaction in both parties' vaults.
 
             subFlow(FinalityFlow(fullySignedTx, FINALISING_TRANSACTION.childProgressTracker()))
+            File("/root/cordaWasteDisposal/logs/myLogProposalFlow.txt").writeText("FASE 5")
             return proposalState
         }
     }
@@ -150,8 +166,8 @@ object ProposalFlow {
         }
     }
 
-    @InitiatingFlow
     @SchedulableFlow
+    @InitiatingFlow
     class EndProposal(private val stateRef: StateRef) : FlowLogic<Unit>() {
 
         companion object {
@@ -209,11 +225,10 @@ object ProposalFlow {
                 progressTracker.currentStep = GATHERING_SIGS
 
                 var syndialFlow : FlowSession = initiateFlow(proposalState.syndial)
-                var clienteFlow: FlowSession = initiateFlow(proposalState.cliente)
                 var fornitoreFlow : FlowSession = initiateFlow(proposalState.fornitore)
 
                 // Send the state to the other nodes, and receive it back with their signature.
-                val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(syndialFlow, clienteFlow, fornitoreFlow), GATHERING_SIGS.childProgressTracker()))
+                val fullySignedTx = subFlow(CollectSignaturesFlow(partSignedTx, setOf(syndialFlow, fornitoreFlow), GATHERING_SIGS.childProgressTracker()))
 
                 // Stage 5.
                 progressTracker.currentStep = FINALISING_TRANSACTION

@@ -4,6 +4,7 @@ import com.wasteDisposal.state.ProposalState
 import com.wasteDisposal.state.WasteRequestState
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
+import java.io.File
 import java.security.PublicKey
 import java.util.*
 
@@ -36,6 +37,8 @@ class ProposalContract : Contract {
 
     private fun verifyCreate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
 
+        File("/root/cordaWasteDisposal/logs/myLogProposalContract.txt").writeText("FASE Verify Create")
+
         "No inputs should be consumed when creating a transaction." using (tx.inputStates.isEmpty())
 
         "Only one transaction state should be created." using (tx.outputStates.size == 1)
@@ -48,6 +51,8 @@ class ProposalContract : Contract {
         "proposal status must be 'pending' or 'denied'" using (proposal.status.equals("pending", ignoreCase = true) || proposal.status.equals("denied", ignoreCase = true))
 
         "All of the participants must be signers." using (signers.containsAll(proposal.participants.map { it.owningKey }))
+
+        File("/root/cordaWasteDisposal/logs/myLogProposalContract.txt").writeText("FASE Verify Create Complete")
     }
 
     private fun verifyIssueUpdate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {

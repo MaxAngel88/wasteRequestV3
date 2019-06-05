@@ -11,7 +11,6 @@ import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import java.time.Instant
-import java.util.*
 
 data class ProposalState (
         val cliente: Party,

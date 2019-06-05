@@ -8,14 +8,8 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Table
 
-/**
- * The family of schemas for IOUState.
- */
 object WasteRequestSchema
 
-/**
- * An IOUState schema.
- */
 object WasteRequestSchemaV1 : MappedSchema(
         schemaFamily = WasteRequestSchema.javaClass,
         version = 1,

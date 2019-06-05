@@ -2,7 +2,6 @@ package com.wasteDisposal.POJO
 
 import net.corda.core.serialization.CordaSerializable
 import java.time.Instant
-import java.util.*
 
 @CordaSerializable
 data class WasteRequestPojo(

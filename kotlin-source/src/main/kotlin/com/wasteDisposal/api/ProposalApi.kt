@@ -5,10 +5,8 @@ import com.wasteDisposal.flow.ProposalFlow
 import com.wasteDisposal.flow.WasteRequestFlow
 import com.wasteDisposal.schema.ProposalSchemaV1
 import com.wasteDisposal.state.ProposalState
-import com.wasteDisposal.state.WasteRequestState
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
-import net.corda.core.internal.x500Name
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.messaging.vaultQueryBy
@@ -23,7 +21,6 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.core.Response.Status.BAD_REQUEST
 import javax.ws.rs.core.Response.Status.CREATED
 import net.corda.core.node.services.vault.QueryCriteria
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -124,7 +121,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
     }
 
     /**
-     *  GetAllMyProposal
+     *  GetAllReceivedProposal
      */
     @GET
     @Path("get/getAllReceivedProposal")
@@ -213,8 +210,6 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
             val fornitore: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
             val syndial: Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Syndial,L=Milan,C=IT"))!!
 
-            File("/root/cordaWasteDisposal/logs/myLogProposalApi.txt").writeText("FASE A")
-
             val proposal = rpcOps.startTrackedFlow(
                     ProposalFlow::Starter,
                     fornitore,
@@ -222,11 +217,7 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            File("/root/cordaWasteDisposal/logs/myLogProposalApi.txt").writeText("FASE B")
-
             val resp = ResponsePojo("SUCCESS", "New Proposal committed to ledger.", proposal)
-
-            File("/root/cordaWasteDisposal/logs/myLogProposalApi.txt").writeText("FASE C")
 
             return Response.status(CREATED).entity(resp).build()
 
@@ -284,29 +275,6 @@ class ProposalApi(private val rpcOps: CordaRPCOps) {
             val resp = ResponsePojo("SUCCESS", "Proposal updated to ledger.", proposal)
             return Response.status(CREATED).entity(resp).build()
 
-
-        } catch (ex: Exception) {
-            val msg = ex.message
-            logger.error(ex.message, ex)
-            val resp = ResponsePojo("ERROR", msg!!, "")
-            return Response.status(BAD_REQUEST).entity(resp).build()
-        }
-    }
-
-    /**
-     *
-     * Simple Post
-     *
-     */
-    @POST
-    @Path("post/simplePost")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun simplePost(req: SimplePojo): Response {
-
-        try {
-            val resp = ResponsePojo("SUCCESS", "Simple Post done.", req)
-            return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {
             val msg = ex.message

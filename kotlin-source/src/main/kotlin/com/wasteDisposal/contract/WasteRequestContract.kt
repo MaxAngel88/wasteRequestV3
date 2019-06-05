@@ -6,7 +6,6 @@ import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 import java.security.PublicKey
 import java.time.Instant
-import java.util.*
 
 
 class WasteRequestContract : Contract {

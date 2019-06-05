@@ -1,12 +1,10 @@
 package com.wasteDisposal.contract
 
 import com.wasteDisposal.state.ProposalState
-import com.wasteDisposal.state.WasteRequestState
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 import java.io.File
 import java.security.PublicKey
-import java.util.*
 
 
 class ProposalContract : Contract {

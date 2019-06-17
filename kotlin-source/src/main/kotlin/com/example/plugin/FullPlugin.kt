@@ -2,6 +2,7 @@ package com.example.plugin
 
 
 import com.example.api.ExampleApi
+import com.wasteDisposal.api.EarlyProposalApi
 import com.wasteDisposal.api.ProposalApi
 import com.wasteDisposal.api.WasteRequestApi
 import net.corda.webserver.services.WebServerPluginRegistry
@@ -11,7 +12,7 @@ class FullPlugin : WebServerPluginRegistry {
     /**
      * A list of classes that expose web APIs.
      */
-    override val webApis = listOf(Function(::ExampleApi), Function(::ProposalApi), Function(::WasteRequestApi))
+    override val webApis = listOf(Function(::ExampleApi), Function(::ProposalApi), Function(::WasteRequestApi), Function(::EarlyProposalApi))
 
     /**
      * A list of directories in the resources directory that will be served by Jetty under /web.

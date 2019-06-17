@@ -111,7 +111,7 @@ class EarlyProposalApi (private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "New Proposal committed to ledger.", earlyProposal)
+            val resp = ResponsePojo("SUCCESS", "New EarlyProposal committed to ledger.", earlyProposal)
 
             return Response.status(CREATED).entity(resp).build()
 
@@ -141,7 +141,7 @@ class EarlyProposalApi (private val rpcOps: CordaRPCOps) {
                     req
             ).returnValue.getOrThrow()
 
-            val resp = ResponsePojo("SUCCESS", "New WasteRequest committed to ledger.", proposal)
+            val resp = ResponsePojo("SUCCESS", "New Proposal committed to ledger.", proposal)
             return Response.status(CREATED).entity(resp).build()
 
         } catch (ex: Exception) {

@@ -104,6 +104,7 @@ object WasteRequestFlow {
                     proposalState.wasteDescAmm,
                     proposalState.wasteGps,
                     idProposal,
+                    proposalState.idEarlyProposal,
                     "ongoing",
                     UniqueIdentifier(id = UUID.randomUUID()))
 
@@ -234,6 +235,7 @@ object WasteRequestFlow {
                     oldWasteRequestState.wasteDescAmm,
                     oldWasteRequestState.wasteGps,
                     oldWasteRequestState.idProposal,
+                    oldWasteRequestState.idEarlyProposal,
                     newStatus,
                     UniqueIdentifier(id = UUID.randomUUID()))
 

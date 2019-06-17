@@ -24,6 +24,7 @@ data class WasteRequestState(
         val wasteDescAmm: String,
         val wasteGps: String,
         val idProposal: String,
+        val idEarlyProposal: String,
         val status: String,
 
         override val linearId: UniqueIdentifier = UniqueIdentifier()):
@@ -47,6 +48,7 @@ data class WasteRequestState(
                     this.wasteGps,
                     this.status,
                     this.idProposal,
+                    this.idEarlyProposal,
                     this.linearId.id
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")

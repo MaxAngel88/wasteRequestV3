@@ -57,12 +57,15 @@ object WasteRequestSchemaV1 : MappedSchema(
             @Column(name = "idProposal")
             var idProposal: String,
 
+            @Column(name = "idEarlyProposal")
+            var idEarlyProposal: String,
+
             @Column(name = "linear_id")
             var linearId: UUID
     ) : PersistentState() {
         // Default constructor required by hibernate.
         // constructor(): this("", "", 0, UUID.randomUUID())
-        constructor() : this("","", "", "", "", Instant.now(), "", 0.0, "","","", "", "", UUID.randomUUID())
+        constructor() : this("","", "", "", "", Instant.now(), "", 0.0, "","","", "", "", "", UUID.randomUUID())
 
     }
 }

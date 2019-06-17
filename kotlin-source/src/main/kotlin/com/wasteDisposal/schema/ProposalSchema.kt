@@ -52,6 +52,9 @@ object ProposalSchemaV1 : MappedSchema(
             @Column(name = "wasteGps")
             var wasteGps: String,
 
+            @Column(name = "idEarlyProposal")
+            var idEarlyProposal: String,
+
             @Column(name = "status")
             var status: String,
 
@@ -64,6 +67,6 @@ object ProposalSchemaV1 : MappedSchema(
     ) : PersistentState() {
         // Default constructor required by hibernate.
         //constructor(): this("", "", "", , UUID.randomUUID())
-        constructor() : this("", "", "", "", "", Instant.now(),"", 0.0, "", "", "", "", Instant.now(), UUID.randomUUID())
+        constructor() : this("", "", "", "", "", Instant.now(),"", 0.0, "", "", "", "", "", Instant.now(), UUID.randomUUID())
     }
 }

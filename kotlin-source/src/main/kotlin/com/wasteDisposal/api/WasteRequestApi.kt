@@ -2,12 +2,10 @@ package com.wasteDisposal.api
 
 import com.wasteDisposal.POJO.ResponsePojo
 import com.wasteDisposal.POJO.SetWasteRequestPojo
-import com.wasteDisposal.POJO.WasteRequestPojo
 import com.wasteDisposal.flow.WasteRequestFlow
 import com.wasteDisposal.schema.WasteRequestSchemaV1
 import com.wasteDisposal.state.WasteRequestState
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.messaging.vaultQueryBy
@@ -123,39 +121,6 @@ class WasteRequestApi(private val rpcOps: CordaRPCOps) {
 
     }
 
-
-    /**
-     *  Insert WasteRequest
-     */
-    @POST
-    @Path("post/insertWasteRequest")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun createWasteRequest(req : WasteRequestPojo): Response {
-
-        try {
-            val cliente : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.cliente))!!
-            val fornitore : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse(req.fornitore))!!
-            val syndial : Party = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Syndial,L=Milan,C=IT"))!!
-
-            val wasteRequest = rpcOps.startTrackedFlow(
-                    WasteRequestFlow::Starter,
-                    cliente,
-                    syndial,
-                    fornitore,
-                    req
-            ).returnValue.getOrThrow()
-
-            val resp = ResponsePojo("SUCCESS", "New WasteRequest committed to ledger.", wasteRequest)
-            return Response.status(CREATED).entity(resp).build()
-
-        }catch (ex: Throwable){
-            val msg = ex.message
-            logger.error(ex.message, ex)
-            val resp = ResponsePojo("ERROR", msg!!, "")
-            return Response.status(BAD_REQUEST).entity(resp).build()
-        }
-    }
 
     /**
      *  IssueUpdateWasteRequest

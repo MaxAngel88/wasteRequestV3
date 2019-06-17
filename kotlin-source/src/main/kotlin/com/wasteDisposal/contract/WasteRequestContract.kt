@@ -19,7 +19,6 @@ class WasteRequestContract : Contract {
         for(command in commands){
             val setOfSigners = command.signers.toSet()
             when (command.value) {
-                is Commands.Create -> verifyCreate(tx, setOfSigners)
                 is Commands.Issue -> verifyIssue(tx, setOfSigners)
                 is Commands.IssueUpdate -> verifyIssueUpdate(tx, setOfSigners)
                 else -> throw IllegalArgumentException("Unrecognised command.")
@@ -28,23 +27,8 @@ class WasteRequestContract : Contract {
     }
 
     interface Commands : CommandData {
-        class Create : Commands
         class Issue : Commands
         class IssueUpdate: Commands
-    }
-
-    private fun verifyCreate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
-        "No inputs should be consumed when creating a transaction." using (tx.inputStates.isEmpty())
-        "Only one transaction state should be created." using (tx.outputStates.size == 1)
-        val wasteRequest = tx.outputsOfType<WasteRequestState>().single()
-        "cliente and fornitore cannot be the same" using (wasteRequest.cliente != wasteRequest.fornitore)
-        "date cannot be in the future" using (wasteRequest.requestDate < Instant.now())
-        "wasteType cannot be empty" using (wasteRequest.wasteType.isNotEmpty())
-        "wasteWeight must be grather than 0" using (wasteRequest.wasteWeight > 0.0)
-        "wasteGps cannot be empty" using (wasteRequest.wasteGps.isNotEmpty())
-        "wasteRequest status must be 'ongoing' or 'completed'" using (wasteRequest.status.equals("ongoing", ignoreCase = true) || wasteRequest.status.equals("completed", ignoreCase = true))
-
-        "All of the participants must be signers." using (signers.containsAll(wasteRequest.participants.map { it.owningKey }))
     }
 
     private fun verifyIssue(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {

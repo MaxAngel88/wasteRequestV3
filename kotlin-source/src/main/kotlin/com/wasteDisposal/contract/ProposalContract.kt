@@ -18,7 +18,6 @@ class ProposalContract : Contract {
         for(command in commands) {
             val setOfSigners = command.signers.toSet()
             when (command.value) {
-                is Commands.Create -> verifyCreate(tx, setOfSigners)
                 is Commands.IssueUpdate -> verifyIssueUpdate(tx, setOfSigners)
                 is Commands.End -> verifyEnd(tx, setOfSigners)
                 else -> throw IllegalArgumentException("Unrecognised command.")
@@ -27,30 +26,9 @@ class ProposalContract : Contract {
     }
 
     interface Commands : CommandData {
-        class Create : Commands, TypeOnlyCommandData()
         class IssueUpdate : Commands, TypeOnlyCommandData()
         class End : Commands, TypeOnlyCommandData()
         //class Settle : TypeOnlyCommandData(), Commands
-    }
-
-    private fun verifyCreate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
-
-        File("/root/cordaWasteDisposal/logs/myLogProposalContract.txt").writeText("FASE Verify Create")
-
-        "No inputs should be consumed when creating a transaction." using (tx.inputStates.isEmpty())
-
-        "Only one transaction state should be created." using (tx.outputStates.size == 1)
-        val proposal = tx.outputsOfType<ProposalState>().single()
-        "cliente and fornitore cannot be the same" using (proposal.cliente != proposal.fornitore)
-        "validity must be grather than date" using (proposal.validity > proposal.requestDate)
-        "wasteType cannot be empty" using (proposal.wasteType.isNotEmpty())
-        "wasteWeight must be grather than 0" using (proposal.wasteWeight > 0.0)
-        "wasteGps cannot be empty" using (proposal.wasteGps.isNotEmpty())
-        "proposal status must be 'pending' or 'denied'" using (proposal.status.equals("pending", ignoreCase = true) || proposal.status.equals("denied", ignoreCase = true))
-
-        "All of the participants must be signers." using (signers.containsAll(proposal.participants.map { it.owningKey }))
-
-        File("/root/cordaWasteDisposal/logs/myLogProposalContract.txt").writeText("FASE Verify Create Complete")
     }
 
     private fun verifyIssueUpdate(tx: LedgerTransaction, signers: Set<PublicKey>) = requireThat {

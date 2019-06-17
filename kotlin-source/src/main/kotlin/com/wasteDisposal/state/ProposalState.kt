@@ -24,6 +24,7 @@ data class ProposalState (
         val wasteDesc: String,
         val wasteDescAmm: String,
         val wasteGps: String,
+        val idEarlyProposal: String,
         val status: String,
         val validity: Instant,
 
@@ -50,6 +51,7 @@ data class ProposalState (
                     this.wasteDesc,
                     this.wasteDescAmm,
                     this.wasteGps,
+                    this.idEarlyProposal,
                     this.status,
                     this.validity,
                     this.linearId.id
